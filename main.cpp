@@ -37,25 +37,10 @@ inline void AddEdge(int a, int b, int c)
     return;
 }
 
-//将节点a压入堆内
-inline void push(int a)
-{
-    int b = ++heap[0];
-    heap[b] = a;
-    pos[a] = heap[0];
-    while (dis[b] < dis[b >> 1] && b > 1)
-    {
-        pos[heap[b]] = b >> 1;
-        pos[heap[b >> 1]] = b;
-        heap[b] ^= heap[b >> 1] ^= heap[b] ^= heap[b >> 1];
-    }
-    return;
-}
-
 //向上调整
 void AdjustUp(int a)
 {
-    if (a > 1 && dis[a] < dis[a >> 1])
+    if (a > 1 && dis[heap[a]] < dis[heap[a >> 1]])
     {
         pos[heap[a]] = a >> 1;
         pos[heap[a >> 1]] = a;
@@ -65,16 +50,34 @@ void AdjustUp(int a)
     return;
 }
 
+//将节点a压入堆内
+inline void push(int a)
+{
+    int b = ++heap[0];
+    heap[b] = a;
+    pos[a] = heap[0];
+    /*while (dis[heap[b]] < dis[heap[b >> 1]] && b > 1)
+    {
+        pos[heap[b]] = b >> 1;
+        pos[heap[b >> 1]] = b;
+        heap[b] ^= heap[b >> 1] ^= heap[b] ^= heap[b >> 1];
+        b >>= 1;
+    }*/
+    AdjustUp(b);
+    return;
+}
+
+
 //向下调整
 void AdjustDown(int a)
 {
-    if ((dis[a] < dis[a << 1] || (a << 1) > heap[0]) && (dis[a] < dis[a << 1 | 1] || (a << 1 | 1) > heap[0]))
+    if ((dis[heap[a]] < dis[heap[a << 1]] || (a << 1) > heap[0]) && (dis[heap[a]] < dis[heap[a << 1 | 1]] || (a << 1 | 1) > heap[0]))
         return;
-    if (dis[a] > dis[a << 1] && (a << 1) <= heap[0])
+    if (dis[heap[a]] > dis[heap[a << 1]] && (a << 1) <= heap[0])
     {
-        if (dis[a] > dis[a << 1 | 1] && (a << 1 | 1) <= heap[0])
+        if (dis[heap[a]] > dis[heap[a << 1 | 1]] && (a << 1 | 1) <= heap[0])
         {
-            if (dis[a << 1] < dis[a << 1 | 1])
+            if (dis[heap[a << 1]] < dis[heap[a << 1 | 1]])
             {
                 pos[heap[a]] = a << 1;
                 pos[heap[a << 1]] = a;
@@ -134,10 +137,7 @@ inline void Print()
 inline void dijkstra()
 {
     int i, a, b;
-    for (i = 1; i <= 25000000; i++)
-    {
-        dis[i] = 0x3fffffff;
-    }
+    memset(dis, 0x3f, sizeof(dis));
     dis[s] = 0;
     push(s);
     while (heap[0])
@@ -185,6 +185,7 @@ void build()
             fin.read((char *)&a, 4);
             fin.read((char *)&b, 4);
             AddEdge(now, a, b);
+            //printf("%d %d %d\n",now,a,b);
         }
         now++;
     }
